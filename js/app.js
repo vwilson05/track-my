@@ -179,6 +179,14 @@ async function renderWeekView() {
     const weekGrid = document.getElementById('weekGrid');
     const weekTitle = document.getElementById('weekTitle');
     
+    console.log('weekGrid element:', weekGrid);
+    console.log('weekTitle element:', weekTitle);
+    
+    if (!weekGrid) {
+        console.error('weekGrid element not found!');
+        return;
+    }
+    
     const today = new Date();
     const weekStart = new Date(today);
     weekStart.setDate(weekStart.getDate() - weekStart.getDay() + (weekOffset * 7));
@@ -206,6 +214,8 @@ async function renderWeekView() {
         date.setDate(date.getDate() + i);
         const dateKey = Utils.getDayKey(date);
         
+        console.log(`Day ${i}: ${dateKey}, completions:`, completions[dateKey]);
+        
         const dayCard = document.createElement('div');
         dayCard.className = 'day-card';
         
@@ -230,6 +240,7 @@ async function renderWeekView() {
         dayCard.appendChild(dayHeader);
         dayCard.appendChild(progressBar);
         weekGrid.appendChild(dayCard);
+        console.log(`Added card for ${dateKey} to weekGrid`);
     }
 }
 
@@ -248,13 +259,27 @@ async function renderStatsView() {
         completionsKeys: Object.keys(completions)
     });
     
-    document.getElementById('totalHabits').textContent = habits.length;
+    const totalHabitsEl = document.getElementById('totalHabits');
+    const completionRateEl = document.getElementById('completionRate');
+    
+    console.log('Updating totalHabits element:', totalHabitsEl, 'with value:', habits.length);
+    if (totalHabitsEl) {
+        totalHabitsEl.textContent = habits.length;
+    } else {
+        console.error('totalHabits element not found!');
+    }
     
     const today = Utils.getDayKey(new Date());
     const todayCompletions = completions[today] || [];
     const completionRate = habits.length > 0 ? 
         Math.round((todayCompletions.length / habits.length) * 100) : 0;
-    document.getElementById('completionRate').textContent = `${completionRate}%`;
+    
+    console.log('Updating completionRate element:', completionRateEl, 'with value:', `${completionRate}%`);
+    if (completionRateEl) {
+        completionRateEl.textContent = `${completionRate}%`;
+    } else {
+        console.error('completionRate element not found!');
+    }
     
     let maxStreak = 0;
     let maxBestStreak = 0;
