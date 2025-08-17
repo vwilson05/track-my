@@ -1,15 +1,15 @@
 const CACHE_NAME = 'track-my-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/css/themes.css',
-  '/js/app.js',
-  '/js/db.js',
-  '/js/habits.js',
-  '/js/llm.js',
-  '/js/utils.js',
-  '/manifest.json'
+  './',
+  './index.html',
+  './css/styles.css',
+  './css/themes.css',
+  './js/app.js',
+  './js/db.js',
+  './js/habits.js',
+  './js/llm.js',
+  './js/utils.js',
+  './manifest.json'
 ];
 
 self.addEventListener('install', event => {

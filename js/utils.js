@@ -76,14 +76,14 @@ const Utils = {
 
     getCategoryIcon(category) {
         const icons = {
-            health: 'd',
-            fitness: '=�',
-            learning: '=�',
-            family: '=h=i=g=f',
-            work: '=�',
-            mindfulness: '>�'
+            health: '❤️',
+            fitness: '💪',
+            learning: '📚',
+            family: '👨‍👩‍👧‍👦',
+            work: '💼',
+            mindfulness: '🧘'
         };
-        return icons[category] || '=�';
+        return icons[category] || '✨';
     },
 
     exportData(data) {
