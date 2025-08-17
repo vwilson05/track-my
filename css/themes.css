@@ -1,0 +1,27 @@
+:root {
+    --primary-bg: #0a0a0a;
+    --secondary-bg: #1a1a1a;
+    --tertiary-bg: #252525;
+    --primary-text: #e5e5e5;
+    --secondary-text: #a0a0a0;
+    --border-color: #333333;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+    
+    --health-color: #10b981;
+    --fitness-color: #3b82f6;
+    --learning-color: #8b5cf6;
+    --family-color: #ec4899;
+    --work-color: #f59e0b;
+    --mindfulness-color: #06b6d4;
+    
+    --success-color: #22c55e;
+    --danger-color: #ef4444;
+    --warning-color: #eab308;
+    
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+    
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
