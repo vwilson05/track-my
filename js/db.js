@@ -233,9 +233,13 @@ class Database {
                 
                 if (startDate || endDate) {
                     completions = completions.filter(c => {
-                        const date = new Date(c.date);
-                        if (startDate && date < startDate) return false;
-                        if (endDate && date > endDate) return false;
+                        // c.date is stored as "YYYY-MM-DD" string
+                        const date = new Date(c.date + 'T00:00:00');
+                        const startDateKey = startDate ? Utils.getDayKey(startDate) : null;
+                        const endDateKey = endDate ? Utils.getDayKey(endDate) : null;
+                        
+                        if (startDateKey && c.date < startDateKey) return false;
+                        if (endDateKey && c.date > endDateKey) return false;
                         return true;
                     });
                 }

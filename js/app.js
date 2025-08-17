@@ -194,6 +194,13 @@ async function renderWeekView() {
     const habits = await DB.getHabits();
     const completions = await DB.getCompletions(weekStart, weekEnd);
     
+    console.log('Week View Debug:', {
+        habits: habits.length,
+        completions,
+        weekStart: weekStart.toISOString(),
+        weekEnd: weekEnd.toISOString()
+    });
+    
     for (let i = 0; i < 7; i++) {
         const date = new Date(weekStart);
         date.setDate(date.getDate() + i);
@@ -234,6 +241,12 @@ function navigateWeek(direction) {
 async function renderStatsView() {
     const habits = await DB.getHabits();
     const completions = await DB.getCompletions();
+    
+    console.log('Stats View Debug:', {
+        habits: habits.length,
+        completions,
+        completionsKeys: Object.keys(completions)
+    });
     
     document.getElementById('totalHabits').textContent = habits.length;
     
