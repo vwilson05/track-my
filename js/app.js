@@ -46,19 +46,19 @@ function switchView(view) {
     } else if (view === 'stats') {
         renderStatsView();
     } else if (view === 'settings') {
-        openModal('settingsModal');
+        window.openModal('settingsModal');
     }
 }
 
 function setupModals() {
     document.getElementById('addHabitBtn').addEventListener('click', () => {
-        openModal('habitModal');
+        window.openModal('habitModal');
     });
     
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
-                closeModal(modal.id);
+                window.closeModal(modal.id);
             }
         });
     });
@@ -299,7 +299,7 @@ async function requestNotifications() {
 }
 
 function openAddHabitModal() {
-    openModal('habitModal');
+    window.openModal('habitModal');
 }
 
 window.openModal = openModal;
