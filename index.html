@@ -51,7 +51,7 @@
                 </svg>
                 <h2>Start Building Better Habits</h2>
                 <p>Add your first habit to begin tracking</p>
-                <button class="cta-button" onclick="openAddHabitModal()">Add First Habit</button>
+                <button class="cta-button" onclick="window.openAddHabitModal()">Add First Habit</button>
             </div>
         </main>
 
@@ -95,7 +95,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Add New Habit</h2>
-                <button class="close-btn" onclick="closeModal('habitModal')">
+                <button class="close-btn" onclick="window.closeModal('habitModal')">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -141,7 +141,7 @@
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="closeModal('habitModal')">Cancel</button>
+                    <button type="button" class="btn-secondary" onclick="window.closeModal('habitModal')">Cancel</button>
                     <button type="submit" class="btn-primary">Save Habit</button>
                 </div>
             </form>
@@ -153,7 +153,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Settings</h2>
-                <button class="close-btn" onclick="closeModal('settingsModal')">
+                <button class="close-btn" onclick="window.closeModal('settingsModal')">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -180,9 +180,9 @@
                 
                 <div class="settings-section">
                     <h3>Data Management</h3>
-                    <button class="btn-secondary" onclick="exportData()">Export Data</button>
-                    <button class="btn-secondary" onclick="importData()">Import Data</button>
-                    <button class="btn-danger" onclick="clearAllData()">Clear All Data</button>
+                    <button class="btn-secondary" onclick="window.exportData()">Export Data</button>
+                    <button class="btn-secondary" onclick="window.importData()">Import Data</button>
+                    <button class="btn-danger" onclick="window.clearAllData()">Clear All Data</button>
                 </div>
                 
                 <div class="settings-section">
@@ -238,13 +238,13 @@
     <!-- Week View -->
     <div class="view-container" id="weekView" style="display: none;">
         <div class="week-header">
-            <button class="week-nav-btn" onclick="navigateWeek(-1)">
+            <button class="week-nav-btn" onclick="window.navigateWeek(-1)">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="15 18 9 12 15 6"></polyline>
                 </svg>
             </button>
             <h2 id="weekTitle">This Week</h2>
-            <button class="week-nav-btn" onclick="navigateWeek(1)">
+            <button class="week-nav-btn" onclick="window.navigateWeek(1)">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
