@@ -22,12 +22,9 @@ async function initApp() {
 
 function setupNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
-    console.log('Found nav items:', navItems.length);
     
     navItems.forEach(item => {
-        console.log('Adding click handler to nav item:', item.dataset.view);
         item.addEventListener('click', () => {
-            console.log('Nav item clicked:', item.dataset.view);
             navItems.forEach(n => n.classList.remove('active'));
             item.classList.add('active');
             
@@ -38,28 +35,11 @@ function setupNavigation() {
 }
 
 function switchView(view) {
-    console.log('Switching to view:', view);
     currentView = view;
     
-    const mainContent = document.getElementById('mainContent');
-    const weekView = document.getElementById('weekView');
-    const statsView = document.getElementById('statsView');
-    
-    console.log('Elements found:', {
-        mainContent: !!mainContent,
-        weekView: !!weekView,
-        statsView: !!statsView
-    });
-    
-    if (mainContent) mainContent.style.display = view === 'today' ? 'block' : 'none';
-    if (weekView) weekView.style.display = view === 'week' ? 'block' : 'none';
-    if (statsView) statsView.style.display = view === 'stats' ? 'block' : 'none';
-    
-    console.log('After switching, displays:', {
-        mainContent: mainContent?.style.display,
-        weekView: weekView?.style.display,
-        statsView: statsView?.style.display
-    });
+    document.getElementById('mainContent').style.display = view === 'today' ? 'block' : 'none';
+    document.getElementById('weekView').style.display = view === 'week' ? 'block' : 'none';
+    document.getElementById('statsView').style.display = view === 'stats' ? 'block' : 'none';
     
     if (view === 'week') {
         renderWeekView();
