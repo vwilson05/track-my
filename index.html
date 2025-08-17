@@ -85,7 +85,19 @@
                 </div>
             </div>
             <div class="chart-container">
-                <canvas id="progressChart"></canvas>
+                <div class="chart-header">
+                    <select id="habitFilter" class="habit-filter">
+                        <option value="all">All Habits</option>
+                    </select>
+                    <div class="chart-nav">
+                        <button id="chartPrev" class="chart-nav-btn">←</button>
+                        <span id="chartRange" class="chart-range">Last 14 days</span>
+                        <button id="chartNext" class="chart-nav-btn">→</button>
+                    </div>
+                </div>
+                <div class="chart-scroll-container">
+                    <canvas id="progressChart"></canvas>
+                </div>
             </div>
             <div class="heatmap-container" id="heatmapContainer">
                 <!-- Calendar heatmap will be rendered here -->

@@ -546,13 +546,73 @@ body {
     min-height: 200px;
     max-width: 100%;
     overflow: hidden;
+}
+
+.chart-header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.habit-filter {
+    padding: 0.4rem 0.8rem;
+    background: var(--tertiary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--primary-text);
+    font-size: 0.9rem;
+    min-width: 120px;
+}
+
+.chart-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-nav-btn {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border-color);
+    background: var(--tertiary-bg);
+    color: var(--primary-text);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.chart-nav-btn:hover {
+    background: var(--border-color);
+}
+
+.chart-nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.chart-range {
+    color: var(--secondary-text);
+    font-size: 0.85rem;
+    min-width: 100px;
+    text-align: center;
+}
+
+.chart-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 .chart-container canvas {
-    max-width: 100%;
+    display: block;
+    min-width: 100%;
     height: auto;
 }
 
