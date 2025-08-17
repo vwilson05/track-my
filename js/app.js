@@ -278,7 +278,157 @@ function renderChart() {
 
 function renderHeatmap(completions) {
     const container = document.getElementById('heatmapContainer');
-    container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--secondary-text);">Activity heatmap coming soon</div>';
+    container.innerHTML = '';
+    
+    // Create heatmap header
+    const header = document.createElement('div');
+    header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;';
+    header.innerHTML = `
+        <h3 style="margin: 0; color: var(--primary-text);">Activity Heatmap</h3>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="color: var(--secondary-text); font-size: 0.85rem;">Less</span>
+            <div style="display: flex; gap: 2px;">
+                <div style="width: 12px; height: 12px; background: var(--tertiary-bg); border-radius: 2px;"></div>
+                <div style="width: 12px; height: 12px; background: rgba(16, 185, 129, 0.3); border-radius: 2px;"></div>
+                <div style="width: 12px; height: 12px; background: rgba(16, 185, 129, 0.6); border-radius: 2px;"></div>
+                <div style="width: 12px; height: 12px; background: rgba(16, 185, 129, 0.9); border-radius: 2px;"></div>
+                <div style="width: 12px; height: 12px; background: rgb(16, 185, 129); border-radius: 2px;"></div>
+            </div>
+            <span style="color: var(--secondary-text); font-size: 0.85rem;">More</span>
+        </div>
+    `;
+    container.appendChild(header);
+    
+    // Create heatmap grid
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display: flex; gap: 4px; overflow-x: auto; padding: 1rem 0;';
+    
+    // Get the last 52 weeks of data
+    const today = new Date();
+    const weeks = 52;
+    const daysPerWeek = 7;
+    
+    // Create day labels
+    const dayLabels = document.createElement('div');
+    dayLabels.style.cssText = 'display: flex; flex-direction: column; gap: 2px; margin-right: 8px;';
+    const days = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+    days.forEach(day => {
+        const label = document.createElement('div');
+        label.style.cssText = 'height: 12px; font-size: 10px; color: var(--secondary-text); display: flex; align-items: center;';
+        label.textContent = day;
+        dayLabels.appendChild(label);
+    });
+    grid.appendChild(dayLabels);
+    
+    // Calculate total habits for percentage calculation
+    const habitsCount = window.habitManager ? window.habitManager.habits.length : 1;
+    
+    // Generate heatmap cells
+    for (let week = weeks - 1; week >= 0; week--) {
+        const weekColumn = document.createElement('div');
+        weekColumn.style.cssText = 'display: flex; flex-direction: column; gap: 2px;';
+        
+        for (let day = 0; day < daysPerWeek; day++) {
+            const cellDate = new Date(today);
+            cellDate.setDate(cellDate.getDate() - (week * 7) - (today.getDay() - day));
+            const dateKey = Utils.getDayKey(cellDate);
+            
+            const cell = document.createElement('div');
+            cell.style.cssText = 'width: 12px; height: 12px; border-radius: 2px; cursor: pointer; transition: all 0.2s;';
+            
+            // Calculate completion intensity
+            const dayCompletions = completions[dateKey] || [];
+            const completionRate = habitsCount > 0 ? dayCompletions.length / habitsCount : 0;
+            
+            // Set cell color based on completion rate
+            if (completionRate === 0) {
+                cell.style.background = 'var(--tertiary-bg)';
+            } else if (completionRate <= 0.25) {
+                cell.style.background = 'rgba(16, 185, 129, 0.3)';
+            } else if (completionRate <= 0.5) {
+                cell.style.background = 'rgba(16, 185, 129, 0.5)';
+            } else if (completionRate <= 0.75) {
+                cell.style.background = 'rgba(16, 185, 129, 0.7)';
+            } else {
+                cell.style.background = 'rgb(16, 185, 129)';
+            }
+            
+            // Add hover effect and tooltip
+            cell.title = `${cellDate.toLocaleDateString()}: ${dayCompletions.length} habit${dayCompletions.length !== 1 ? 's' : ''} completed`;
+            cell.onmouseover = () => {
+                cell.style.transform = 'scale(1.2)';
+                cell.style.outline = '2px solid var(--primary-color)';
+            };
+            cell.onmouseout = () => {
+                cell.style.transform = 'scale(1)';
+                cell.style.outline = 'none';
+            };
+            
+            // Don't render future dates
+            if (cellDate > today) {
+                cell.style.visibility = 'hidden';
+            }
+            
+            weekColumn.appendChild(cell);
+        }
+        
+        grid.appendChild(weekColumn);
+    }
+    
+    // Add month labels
+    const monthLabels = document.createElement('div');
+    monthLabels.style.cssText = 'display: flex; gap: 4px; margin-left: 40px; margin-bottom: 0.5rem;';
+    
+    const months = [];
+    for (let week = weeks - 1; week >= 0; week -= 4) {
+        const cellDate = new Date(today);
+        cellDate.setDate(cellDate.getDate() - (week * 7));
+        const monthName = cellDate.toLocaleDateString('default', { month: 'short' });
+        
+        const label = document.createElement('div');
+        label.style.cssText = 'font-size: 10px; color: var(--secondary-text); width: 48px;';
+        label.textContent = monthName;
+        monthLabels.appendChild(label);
+    }
+    
+    container.appendChild(monthLabels);
+    container.appendChild(grid);
+    
+    // Add summary stats
+    const stats = document.createElement('div');
+    stats.style.cssText = 'margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around;';
+    
+    // Calculate stats for the last 30 days
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    let totalCompletions = 0;
+    let activeDays = 0;
+    
+    Object.entries(completions).forEach(([date, habits]) => {
+        const dateObj = new Date(date);
+        if (dateObj >= thirtyDaysAgo && dateObj <= today) {
+            totalCompletions += habits.length;
+            if (habits.length > 0) activeDays++;
+        }
+    });
+    
+    stats.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-text);">${totalCompletions}</div>
+            <div style="font-size: 0.85rem; color: var(--secondary-text);">Total (30 days)</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-text);">${activeDays}</div>
+            <div style="font-size: 0.85rem; color: var(--secondary-text);">Active Days</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-text);">${activeDays > 0 ? Math.round(totalCompletions / activeDays) : 0}</div>
+            <div style="font-size: 0.85rem; color: var(--secondary-text);">Daily Average</div>
+        </div>
+    `;
+    
+    container.appendChild(stats);
 }
 
 function checkForUpdates() {
