@@ -309,5 +309,7 @@ window.importData = importData;
 window.clearAllData = clearAllData;
 window.navigateWeek = navigateWeek;
 window.openAddHabitModal = openAddHabitModal;
+window.renderWeekView = renderWeekView;
+window.renderStatsView = renderStatsView;
 
 document.addEventListener('DOMContentLoaded', initApp);
