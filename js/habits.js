@@ -131,6 +131,14 @@ class HabitManager {
         await this.loadCompletions();
         await this.loadHabits();
         this.render();
+        
+        // Also refresh the currently active view
+        const activeView = document.querySelector('.nav-item.active')?.dataset.view;
+        if (activeView === 'week' && window.renderWeekView) {
+            window.renderWeekView();
+        } else if (activeView === 'stats' && window.renderStatsView) {
+            window.renderStatsView();
+        }
     }
 
     async isCompletedToday(habitId) {
