@@ -267,24 +267,40 @@ function renderChart(habits, completions) {
     const canvas = document.getElementById('progressChart');
     const ctx = canvas.getContext('2d');
     
-    // Set canvas size
-    canvas.width = canvas.offsetWidth * 2; // Multiply by 2 for retina displays
-    canvas.height = 500; // 250 * 2
-    canvas.style.width = canvas.offsetWidth + 'px';
-    canvas.style.height = '250px';
-    ctx.scale(2, 2); // Scale for retina
+    // Get container actual width to prevent overflow
+    const container = canvas.parentElement;
+    const containerWidth = container.clientWidth - 32; // Subtract padding
     
-    const width = canvas.offsetWidth;
-    const height = 250;
-    const padding = { top: 20, right: 20, bottom: 40, left: 50 };
+    // Set responsive dimensions
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    const canvasWidth = Math.min(containerWidth, 600); // Max width of 600px
+    const canvasHeight = Math.min(250, canvasWidth * 0.6); // Maintain aspect ratio
+    
+    // Set canvas size for high DPI displays
+    canvas.width = canvasWidth * devicePixelRatio;
+    canvas.height = canvasHeight * devicePixelRatio;
+    canvas.style.width = canvasWidth + 'px';
+    canvas.style.height = canvasHeight + 'px';
+    
+    // Scale context for high DPI
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    
+    const width = canvasWidth;
+    const height = canvasHeight;
+    const padding = { 
+        top: 30, 
+        right: 15, 
+        bottom: 35, 
+        left: width < 400 ? 35 : 45 // Smaller left padding on mobile
+    };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
     
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
     
-    // Get last 30 days of data
-    const days = 30;
+    // Adjust days shown based on screen width
+    const days = width < 400 ? 14 : 30; // Show 14 days on mobile, 30 on desktop
     const today = new Date();
     const data = [];
     const labels = [];
@@ -307,10 +323,10 @@ function renderChart(habits, completions) {
     // Draw grid lines and y-axis labels
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.fillStyle = '#999'; // Secondary text color
-    ctx.font = '10px sans-serif';
+    ctx.font = width < 400 ? '9px sans-serif' : '10px sans-serif';
     ctx.textAlign = 'right';
     
-    const gridLines = 5;
+    const gridLines = width < 400 ? 3 : 5; // Fewer grid lines on mobile
     for (let i = 0; i <= gridLines; i++) {
         const y = padding.top + (chartHeight / gridLines) * i;
         const value = Math.round(maxValue - (maxValue / gridLines) * i);
@@ -322,15 +338,16 @@ function renderChart(habits, completions) {
         ctx.stroke();
         
         // Draw y-axis label
-        ctx.fillText(value + '%', padding.left - 10, y + 3);
+        ctx.fillText(value + '%', padding.left - 5, y + 3);
     }
     
-    // Draw x-axis labels (every 5th day)
+    // Draw x-axis labels (fewer on mobile)
     ctx.textAlign = 'center';
+    const labelInterval = width < 400 ? Math.ceil(labels.length / 5) : 5;
     labels.forEach((label, i) => {
-        if (i % 5 === 0 || i === labels.length - 1) {
+        if (i % labelInterval === 0 || i === labels.length - 1) {
             const x = padding.left + (chartWidth / (data.length - 1)) * i;
-            ctx.fillText(label, x, height - padding.bottom + 15);
+            ctx.fillText(label, x, height - padding.bottom + 12);
         }
     });
     
@@ -402,23 +419,29 @@ function renderChart(habits, completions) {
     
     // Add chart title
     ctx.fillStyle = '#e5e5e5'; // Primary text color
-    ctx.font = '14px sans-serif';
+    ctx.font = width < 400 ? '12px sans-serif' : '14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('30-Day Completion Rate', width / 2, 15);
+    const titleText = width < 400 ? `${days}-Day Trend` : `${days}-Day Completion Rate`;
+    ctx.fillText(titleText, width / 2, 20);
     
-    // Add axis labels
-    ctx.font = '10px sans-serif';
-    ctx.fillStyle = '#999'; // Secondary text color
-    ctx.fillText('Days', width / 2, height - 5);
+    // Add axis labels (skip on very small screens)
+    if (width >= 350) {
+        ctx.font = '9px sans-serif';
+        ctx.fillStyle = '#999'; // Secondary text color
+        ctx.fillText('Days', width / 2, height - 5);
+    }
     
-    // Add legend
-    const legendY = 25;
-    const legendX = width - 100;
-    ctx.fillStyle = 'rgb(16, 185, 129)';
-    ctx.fillRect(legendX, legendY, 10, 10);
-    ctx.fillStyle = '#999'; // Secondary text color
-    ctx.textAlign = 'left';
-    ctx.fillText('Completion %', legendX + 15, legendY + 8);
+    // Add legend (only on larger screens)
+    if (width >= 400) {
+        const legendY = 25;
+        const legendX = width - 100;
+        ctx.fillStyle = 'rgb(16, 185, 129)';
+        ctx.fillRect(legendX, legendY, 8, 8);
+        ctx.fillStyle = '#999'; // Secondary text color
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('Completion %', legendX + 12, legendY + 7);
+    }
 }
 
 function renderHeatmap(completions) {
