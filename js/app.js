@@ -259,21 +259,166 @@ async function renderStatsView() {
     document.getElementById('currentStreak').textContent = maxStreak;
     document.getElementById('bestStreak').textContent = maxBestStreak;
     
-    renderChart();
+    renderChart(habits, completions);
     renderHeatmap(completions);
 }
 
-function renderChart() {
+function renderChart(habits, completions) {
     const canvas = document.getElementById('progressChart');
     const ctx = canvas.getContext('2d');
     
-    canvas.width = canvas.offsetWidth;
-    canvas.height = 250;
+    // Set canvas size
+    canvas.width = canvas.offsetWidth * 2; // Multiply by 2 for retina displays
+    canvas.height = 500; // 250 * 2
+    canvas.style.width = canvas.offsetWidth + 'px';
+    canvas.style.height = '250px';
+    ctx.scale(2, 2); // Scale for retina
     
-    ctx.fillStyle = 'var(--secondary-text)';
+    const width = canvas.offsetWidth;
+    const height = 250;
+    const padding = { top: 20, right: 20, bottom: 40, left: 50 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+    
+    // Get last 30 days of data
+    const days = 30;
+    const today = new Date();
+    const data = [];
+    const labels = [];
+    
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateKey = Utils.getDayKey(date);
+        const dayCompletions = completions[dateKey] || [];
+        const completionRate = habits.length > 0 ? (dayCompletions.length / habits.length) * 100 : 0;
+        
+        data.push(completionRate);
+        labels.push(date.getDate()); // Just the day number
+    }
+    
+    // Find max value for scaling
+    const maxValue = Math.max(...data, 100);
+    const minValue = 0;
+    
+    // Draw grid lines and y-axis labels
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.fillStyle = '#999'; // Secondary text color
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    
+    const gridLines = 5;
+    for (let i = 0; i <= gridLines; i++) {
+        const y = padding.top + (chartHeight / gridLines) * i;
+        const value = Math.round(maxValue - (maxValue / gridLines) * i);
+        
+        // Draw grid line
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+        
+        // Draw y-axis label
+        ctx.fillText(value + '%', padding.left - 10, y + 3);
+    }
+    
+    // Draw x-axis labels (every 5th day)
+    ctx.textAlign = 'center';
+    labels.forEach((label, i) => {
+        if (i % 5 === 0 || i === labels.length - 1) {
+            const x = padding.left + (chartWidth / (data.length - 1)) * i;
+            ctx.fillText(label, x, height - padding.bottom + 15);
+        }
+    });
+    
+    // Draw the line chart
+    if (data.length > 0) {
+        // Create gradient for the line
+        const gradient = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+        gradient.addColorStop(0, 'rgb(16, 185, 129)');
+        gradient.addColorStop(1, 'rgb(59, 130, 246)');
+        
+        // Draw the line
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        ctx.beginPath();
+        data.forEach((value, i) => {
+            const x = padding.left + (chartWidth / (data.length - 1)) * i;
+            const y = padding.top + chartHeight - (value / maxValue) * chartHeight;
+            
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        ctx.stroke();
+        
+        // Draw area under the line
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.1)';
+        ctx.beginPath();
+        data.forEach((value, i) => {
+            const x = padding.left + (chartWidth / (data.length - 1)) * i;
+            const y = padding.top + chartHeight - (value / maxValue) * chartHeight;
+            
+            if (i === 0) {
+                ctx.moveTo(x, height - padding.bottom);
+                ctx.lineTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        ctx.lineTo(width - padding.right, height - padding.bottom);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Draw dots on data points
+        ctx.fillStyle = 'rgb(16, 185, 129)';
+        data.forEach((value, i) => {
+            const x = padding.left + (chartWidth / (data.length - 1)) * i;
+            const y = padding.top + chartHeight - (value / maxValue) * chartHeight;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Add hover area (for future interactivity)
+            if (i === data.length - 1) {
+                // Highlight today's point
+                ctx.strokeStyle = 'rgb(16, 185, 129)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        });
+    }
+    
+    // Add chart title
+    ctx.fillStyle = '#e5e5e5'; // Primary text color
     ctx.font = '14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Chart visualization will be added with Chart.js', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('30-Day Completion Rate', width / 2, 15);
+    
+    // Add axis labels
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = '#999'; // Secondary text color
+    ctx.fillText('Days', width / 2, height - 5);
+    
+    // Add legend
+    const legendY = 25;
+    const legendX = width - 100;
+    ctx.fillStyle = 'rgb(16, 185, 129)';
+    ctx.fillRect(legendX, legendY, 10, 10);
+    ctx.fillStyle = '#999'; // Secondary text color
+    ctx.textAlign = 'left';
+    ctx.fillText('Completion %', legendX + 15, legendY + 8);
 }
 
 function renderHeatmap(completions) {
