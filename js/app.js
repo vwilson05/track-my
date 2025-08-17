@@ -236,6 +236,9 @@ function navigateWeek(direction) {
     renderWeekView();
 }
 
+let chartOffset = 0; // Track current chart time offset
+let selectedHabitId = 'all'; // Track selected habit filter
+
 async function renderStatsView() {
     const habits = await DB.getHabits();
     const completions = await DB.getCompletions();
@@ -259,6 +262,44 @@ async function renderStatsView() {
     document.getElementById('currentStreak').textContent = maxStreak;
     document.getElementById('bestStreak').textContent = maxBestStreak;
     
+    // Populate habit filter dropdown
+    const habitFilter = document.getElementById('habitFilter');
+    if (habitFilter && habitFilter.children.length === 1) { // Only populate once
+        habits.forEach(habit => {
+            const option = document.createElement('option');
+            option.value = habit.id;
+            option.textContent = habit.name;
+            habitFilter.appendChild(option);
+        });
+        
+        habitFilter.addEventListener('change', (e) => {
+            selectedHabitId = e.target.value;
+            renderChart(habits, completions);
+        });
+    }
+    
+    // Setup chart navigation
+    const chartPrev = document.getElementById('chartPrev');
+    const chartNext = document.getElementById('chartNext');
+    
+    if (chartPrev && !chartPrev.hasAttribute('data-initialized')) {
+        chartPrev.setAttribute('data-initialized', 'true');
+        chartPrev.addEventListener('click', () => {
+            chartOffset += 14; // Go back 14 days
+            renderChart(habits, completions);
+        });
+    }
+    
+    if (chartNext && !chartNext.hasAttribute('data-initialized')) {
+        chartNext.setAttribute('data-initialized', 'true');
+        chartNext.addEventListener('click', () => {
+            if (chartOffset > 0) {
+                chartOffset = Math.max(0, chartOffset - 14); // Go forward 14 days
+                renderChart(habits, completions);
+            }
+        });
+    }
+    
     renderChart(habits, completions);
     renderHeatmap(completions);
 }
@@ -269,12 +310,12 @@ function renderChart(habits, completions) {
     
     // Get container actual width to prevent overflow
     const container = canvas.parentElement;
-    const containerWidth = container.clientWidth - 32; // Subtract padding
+    const containerWidth = Math.min(container.clientWidth, window.innerWidth - 48); // Ensure it fits in viewport
     
-    // Set responsive dimensions
+    // Fixed dimensions for consistency
     const devicePixelRatio = window.devicePixelRatio || 1;
-    const canvasWidth = Math.min(containerWidth, 600); // Max width of 600px
-    const canvasHeight = Math.min(250, canvasWidth * 0.6); // Maintain aspect ratio
+    const canvasWidth = Math.min(containerWidth, 500); // Smaller max width
+    const canvasHeight = 200; // Fixed height
     
     // Set canvas size for high DPI displays
     canvas.width = canvasWidth * devicePixelRatio;
@@ -289,9 +330,9 @@ function renderChart(habits, completions) {
     const height = canvasHeight;
     const padding = { 
         top: 30, 
-        right: 15, 
-        bottom: 35, 
-        left: width < 400 ? 35 : 45 // Smaller left padding on mobile
+        right: 10, 
+        bottom: 30, 
+        left: 35
     };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
@@ -299,21 +340,54 @@ function renderChart(habits, completions) {
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
     
-    // Adjust days shown based on screen width
-    const days = width < 400 ? 14 : 30; // Show 14 days on mobile, 30 on desktop
+    // Always show 14 days for consistency
+    const days = 14;
     const today = new Date();
+    today.setDate(today.getDate() - chartOffset); // Apply offset
     const data = [];
     const labels = [];
+    
+    // Filter habits if needed
+    const filteredHabits = selectedHabitId === 'all' ? habits : 
+        habits.filter(h => h.id === selectedHabitId);
+    const habitCount = filteredHabits.length || 1;
     
     for (let i = days - 1; i >= 0; i--) {
         const date = new Date(today);
         date.setDate(date.getDate() - i);
         const dateKey = Utils.getDayKey(date);
         const dayCompletions = completions[dateKey] || [];
-        const completionRate = habits.length > 0 ? (dayCompletions.length / habits.length) * 100 : 0;
+        
+        let completionRate;
+        if (selectedHabitId === 'all') {
+            completionRate = habitCount > 0 ? (dayCompletions.length / habitCount) * 100 : 0;
+        } else {
+            // Check if specific habit was completed
+            completionRate = dayCompletions.includes(selectedHabitId) ? 100 : 0;
+        }
         
         data.push(completionRate);
         labels.push(date.getDate()); // Just the day number
+    }
+    
+    // Update range display
+    const chartRange = document.getElementById('chartRange');
+    if (chartRange) {
+        const endDate = new Date(today);
+        const startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - (days - 1));
+        
+        if (chartOffset === 0) {
+            chartRange.textContent = 'Last 14 days';
+        } else {
+            chartRange.textContent = `${startDate.getMonth() + 1}/${startDate.getDate()} - ${endDate.getMonth() + 1}/${endDate.getDate()}`;
+        }
+    }
+    
+    // Update navigation buttons
+    const chartNext = document.getElementById('chartNext');
+    if (chartNext) {
+        chartNext.disabled = chartOffset === 0;
     }
     
     // Find max value for scaling
@@ -323,10 +397,10 @@ function renderChart(habits, completions) {
     // Draw grid lines and y-axis labels
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.fillStyle = '#999'; // Secondary text color
-    ctx.font = width < 400 ? '9px sans-serif' : '10px sans-serif';
+    ctx.font = '9px sans-serif';
     ctx.textAlign = 'right';
     
-    const gridLines = width < 400 ? 3 : 5; // Fewer grid lines on mobile
+    const gridLines = 4; // Consistent grid lines
     for (let i = 0; i <= gridLines; i++) {
         const y = padding.top + (chartHeight / gridLines) * i;
         const value = Math.round(maxValue - (maxValue / gridLines) * i);
@@ -341,14 +415,13 @@ function renderChart(habits, completions) {
         ctx.fillText(value + '%', padding.left - 5, y + 3);
     }
     
-    // Draw x-axis labels (fewer on mobile)
+    // Draw x-axis labels (show first, middle, and last)
     ctx.textAlign = 'center';
-    const labelInterval = width < 400 ? Math.ceil(labels.length / 5) : 5;
-    labels.forEach((label, i) => {
-        if (i % labelInterval === 0 || i === labels.length - 1) {
-            const x = padding.left + (chartWidth / (data.length - 1)) * i;
-            ctx.fillText(label, x, height - padding.bottom + 12);
-        }
+    ctx.font = '8px sans-serif';
+    const showLabels = [0, Math.floor(labels.length / 2), labels.length - 1];
+    showLabels.forEach(i => {
+        const x = padding.left + (chartWidth / (data.length - 1)) * i;
+        ctx.fillText(labels[i], x, height - padding.bottom + 12);
     });
     
     // Draw the line chart
@@ -419,29 +492,19 @@ function renderChart(habits, completions) {
     
     // Add chart title
     ctx.fillStyle = '#e5e5e5'; // Primary text color
-    ctx.font = width < 400 ? '12px sans-serif' : '14px sans-serif';
+    ctx.font = '12px sans-serif';
     ctx.textAlign = 'center';
-    const titleText = width < 400 ? `${days}-Day Trend` : `${days}-Day Completion Rate`;
+    
+    let titleText;
+    if (selectedHabitId === 'all') {
+        titleText = 'All Habits Completion';
+    } else {
+        const habit = habits.find(h => h.id === selectedHabitId);
+        titleText = habit ? habit.name : 'Completion Rate';
+    }
     ctx.fillText(titleText, width / 2, 20);
     
-    // Add axis labels (skip on very small screens)
-    if (width >= 350) {
-        ctx.font = '9px sans-serif';
-        ctx.fillStyle = '#999'; // Secondary text color
-        ctx.fillText('Days', width / 2, height - 5);
-    }
-    
-    // Add legend (only on larger screens)
-    if (width >= 400) {
-        const legendY = 25;
-        const legendX = width - 100;
-        ctx.fillStyle = 'rgb(16, 185, 129)';
-        ctx.fillRect(legendX, legendY, 8, 8);
-        ctx.fillStyle = '#999'; // Secondary text color
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('Completion %', legendX + 12, legendY + 7);
-    }
+    // No axis labels or legend needed - keep it clean
 }
 
 function renderHeatmap(completions) {
