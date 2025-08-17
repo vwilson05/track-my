@@ -82,7 +82,7 @@ class HabitManager {
         };
         
         await this.addHabit(habit);
-        closeModal('habitModal');
+        window.closeModal('habitModal');
         e.target.reset();
     }
 
@@ -235,7 +235,7 @@ class HabitManager {
                 
                 if (habit.time) {
                     const timeSpan = document.createElement('span');
-                    timeSpan.textContent = `ð ${habit.time}`;
+                    timeSpan.textContent = `ï¿½ ${habit.time}`;
                     habitMeta.appendChild(timeSpan);
                 }
                 
@@ -310,7 +310,7 @@ class HabitManager {
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Best Streak:</span>
-                        <span class="detail-value"><Æ ${habit.bestStreak || 0} days</span>
+                        <span class="detail-value"><ï¿½ ${habit.bestStreak || 0} days</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Total Completions:</span>
