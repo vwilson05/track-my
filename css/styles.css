@@ -588,6 +588,7 @@ body {
 
 .week-grid {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 1rem;
 }
 
@@ -689,6 +690,7 @@ body {
 .day-header {
     font-weight: 600;
     margin-bottom: 0.5rem;
+    color: var(--primary-text);
 }
 
 .progress-bar {
@@ -714,7 +716,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 0.8rem;
-    font-weight: 600;
     color: var(--primary-text);
+    font-weight: 600;
     z-index: 1;
 }
