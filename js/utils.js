@@ -75,15 +75,16 @@ const Utils = {
     },
 
     getCategoryIcon(category) {
+        // Using text labels instead of emojis to avoid encoding issues
         const icons = {
-            health: '♥',
-            fitness: '💪',
-            learning: '📚',
-            family: '👪',
-            work: '💼',
-            mindfulness: '🧘'
+            health: 'H',
+            fitness: 'F',
+            learning: 'L',
+            family: 'Fm',
+            work: 'W',
+            mindfulness: 'M'
         };
-        return icons[category] || '⭐';
+        return icons[category] || '*';
     },
 
     exportData(data) {
